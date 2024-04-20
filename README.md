@@ -1,18 +1,5 @@
 A chatbot that enables users to ask questions of a given dataset using OpenAI's GPT models and Weaviate Vector Database
 
-# Design Decisions
-## Vector Database
-I chose Weaviate because of its scalability and because it allows hybrid search right away which can be used for debugging.
-
-## Choice of Language
-I chose Python for its ease of prototyping, ease of integration, and strong library ecosystem.
-
-## Language Model
-I chose OpenAI's GPT family for its ease of use and my previous familiarity with it. I used text-embedding-3-small for generating embeddings and gpt-3.5-turbo for chat completions and keyword extraction. The reason I chose these models is their cost effectivenesses which was ideal for prototyping.
-
-## Dataset
-I chose the [PubMed Author Manuscripts Database](https://huggingface.co/datasets/TaylorAI/pubmed_author_manuscripts) as it is small yet big enough for prototyping my use case. I used the first 100 entries for testing, as they were enough to exceed the context window of text-embedding-3-small and gpt-3.5-turbo.
-
 # Implementation
 ## Data storage
 Initially, the `small_pubmed_manuscripts.jsonl` is read into the Weaviate Vector Database. This is done by streaming lines from the file and adding them to the Weaviate database, which uses OpenAI's text-embedding-3-small model to convert them into vector embeddings for storage. This is implemented in `weaviate-setup.ipynb`.
@@ -28,12 +15,25 @@ During the execution of the main program:
 
 This is implemented in `weaviate-setup.ipynb`.
 
+# Design Decisions
+## Vector Database
+I chose Weaviate because of its scalability and because it allows hybrid search right away which can be used for debugging.
+
+## Choice of Language
+I chose Python for its ease of prototyping, ease of integration, and strong library ecosystem.
+
+## Language Model
+I chose OpenAI's GPT family for its ease of use and my previous familiarity with it. I used text-embedding-3-small for generating embeddings and gpt-3.5-turbo for chat completions and keyword extraction. The reason I chose these models is their cost effectivenesses which was ideal for prototyping.
+
+## Dataset
+I chose the [PubMed Author Manuscripts Database](https://huggingface.co/datasets/TaylorAI/pubmed_author_manuscripts) as it is small yet big enough for prototyping my use case. I used the first 100 entries for testing, as they were enough to exceed the context window of text-embedding-3-small and gpt-3.5-turbo.
+
 # Challenges Faced
 - During the reading of data into the dataset, some manuscripts are longer than the embedding model's (text-embedding-3-small) context length. This was solved by separating each manuscript into overlapping windows.
 - At first user's raw prompt was being used for the vector similarity search. This approach decreased the quality of the search results. So instead another request to OpenAI was made to extract keywords from user question. However, this proved limited as it didn't account for questions that relied on previous messages. The final approach is to include the message history when asking for propmt extraction. The downside of this approach is that it doubled the response time and cost.
 
 
-# Example interaction
+# Sample run
 ```
 $ python main.py
 
@@ -59,7 +59,7 @@ $
 ```
 
 # How to run
-## Add OpenAI api key
+## Add OpenAI API key
 Create a file named `.env` and add line `OPENAI_API_KEY=YOUR-KEY-HERE`
 
 ## Requirements
