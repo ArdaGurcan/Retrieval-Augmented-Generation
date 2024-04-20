@@ -1,3 +1,38 @@
+A chatbot that enables users to ask questions of a given dataset using OpenAI's GPT models and Weaviate Vector Database
+
+# Design Decisions
+## Vector Database
+I chose Weaviate because of its scalability and because it allows hybrid search right away which can be used for debugging.
+
+## Choice of Language
+I chose Python for its ease of prototyping, ease of integration, and strong library ecosystem.
+
+## Language Model
+I chose OpenAI's GPT family for its ease of use and my previous familiarity with it. I used text-embedding-3-small for generating embeddings and gpt-3.5-turbo for chat completions and keyword extraction. The reason I chose these models is their cost effectivenesses which was ideal for prototyping.
+
+## Dataset
+I chose the [PubMed Author Manuscripts Database](https://huggingface.co/datasets/TaylorAI/pubmed_author_manuscripts) as it is small yet big enough for prototyping my use case. I used the first 100 entries for testing, as they were enough to exceed the context window of text-embedding-3-small and gpt-3.5-turbo.
+
+# Implementation
+## Data storage
+Initially, the `small_pubmed_manuscripts.jsonl` is read into the Weaviate Vector Database. This is done by streaming lines from the file and adding them to the Weaviate database, which uses OpenAI's text-embedding-3-small model to convert them into vector embeddings for storage. This is implemented in `weaviate-setup.ipynb`.
+
+## Chat interface
+During the execution of the main program:
+1. User is asked for a prompt
+2. Keywords are extracted from prompt using OpenAI's gpt-3.5-turbo model
+3. Weaviate database is queried for 5 data objects closest to the prompt keywords based on vector similarity.
+4. Prompt is added to message history
+5. The results of the query are combined with the question as context and a new API request is made to OpenAI's gpt-3.5-turbo model including previous messages and current context + question
+6. The response from OpenAI is added to message history and displayed on the command line. Execution loops back to step 1.
+
+This is implemented in `weaviate-setup.ipynb`.
+
+# Challenges Faced
+- During the reading of data into the dataset, some manuscripts are longer than the embedding model's (text-embedding-3-small) context length. This was solved by separating each manuscript into overlapping windows.
+- At first user's raw prompt was being used for the vector similarity search. This approach decreased the quality of the search results. So instead another request to OpenAI was made to extract keywords from user question. However, this proved limited as it didn't account for questions that relied on previous messages. The final approach is to include the message history when asking for propmt extraction. The downside of this approach is that it doubled the response time and cost.
+
+
 # Example interaction
 ```
 $ python main.py
@@ -42,35 +77,3 @@ The port for the Weaviate database can be configured in `docker-compose.yml`.
 # Make sure OPENAI_API_KEY is set as an environment variable before running this
 docker-compose up -d
 ```
-
-# Design Decisions
-## Vector Database
-I chose Weaviate because of its scalability and because it allows hybrid search right away which can be used for debugging.
-
-## Choice of Language
-I chose Python for its ease of prototyping, ease of integration, and strong library ecosystem.
-
-## Language Model
-I chose OpenAI's GPT family for its ease of use and my previous familiarity with it. I used text-embedding-3-small for generating embeddings and gpt-3.5-turbo for chat completions and keyword extraction. The reason I chose these models is their cost effectivenesses which was ideal for prototyping.
-
-## Dataset
-I chose the [PubMed Author Manuscripts Database](https://huggingface.co/datasets/TaylorAI/pubmed_author_manuscripts) as it is small yet big enough for prototyping my use case. I used the first 100 entries for testing, as they were enough to exceed the context window of text-embedding-3-small and gpt-3.5-turbo.
-
-# Implementation
-## Data storage
-Initially, the `small_pubmed_manuscripts.jsonl` is read into the Weaviate Vector Database. This is done by streaming lines from the file and adding them to the Weaviate database, which uses OpenAI's text-embedding-3-small model to convert them into vector embeddings for storage. This is implemented in `weaviate-setup.ipynb`.
-
-## Chat interface
-During the execution of the main program:
-1. User is asked for a prompt
-2. Keywords are extracted from prompt using OpenAI's gpt-3.5-turbo model
-3. Weaviate database is queried for 5 data objects closest to the prompt keywords based on vector similarity.
-4. Prompt is added to message history
-5. The results of the query are combined with the question as context and a new API request is made to OpenAI's gpt-3.5-turbo model including previous messages and current context + question
-6. The response from OpenAI is added to message history and displayed on the command line. Execution loops back to step 1.
-
-This is implemented in `weaviate-setup.ipynb`.
-
-# Challenges Faced
-- During the reading of data into the dataset, some manuscripts are longer than the embedding model's (text-embedding-3-small) context length. This was solved by separating each manuscript into overlapping windows.
-- At first user's raw prompt was being used for the vector similarity search. This approach decreased the quality of the search results. So instead another request to OpenAI was made to extract keywords from user question. However, this proved limited as it didn't account for questions that relied on previous messages. The final approach is to include the message history when asking for propmt extraction. The downside of this approach is that it doubled the response time and cost.
