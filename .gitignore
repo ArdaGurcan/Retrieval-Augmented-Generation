@@ -1,0 +1,6 @@
+# ignore virtual env
+openai-env/
+# ignore big dataset
+pubmed_author_manuscripts/pubmed_manuscripts.jsonl
+# ignore .env file
+.env
