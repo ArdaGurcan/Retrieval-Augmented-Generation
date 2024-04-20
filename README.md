@@ -30,7 +30,7 @@ I chose the [PubMed Author Manuscripts Database](https://huggingface.co/datasets
 
 # Challenges Faced
 - During the reading of data into the dataset, some manuscripts are longer than the embedding model's (text-embedding-3-small) context length. This was solved by separating each manuscript into overlapping windows.
-- At first, user's raw prompt was being used for the vector similarity search. This approach decreased the quality of the search results. So instead another request to OpenAI was made to extract keywords from user question. However, this proved limited as it didn't account for questions that relied on previous messages. The final approach is to include the message history when asking for prompt extraction. The downside of this approach is that it doubled the response time and cost.
+- At first, user's raw prompt was being used for the vector similarity search. This approach decreased the quality of the search results. So instead another request to OpenAI was made to extract keywords from user question. However, this proved limited as it didn't account for questions that relied on previous messages. The final approach is to include the message history when asking for prompt extraction. The downside of this approach is that it almost doubled the response time and cost.
 
 
 # Sample run
