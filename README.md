@@ -7,13 +7,13 @@ Initially, the `small_pubmed_manuscripts.jsonl` is read into the Weaviate Vector
 ## Chat interface
 During the execution of the main program:
 1. User is asked for a prompt
-2. Keywords are extracted from prompt using OpenAI's gpt-3.5-turbo model
+2. Keywords from current prompt and any needed keywords from previous prompts are extracted using OpenAI's gpt-3.5-turbo model
 3. Weaviate database is queried for 5 data objects closest to the prompt keywords based on vector similarity.
 4. Prompt is added to message history
 5. The results of the query are combined with the question as context and a new API request is made to OpenAI's gpt-3.5-turbo model including previous messages and current context + question
 6. The response from OpenAI is added to message history and displayed on the command line. Execution loops back to step 1.
 
-This is implemented in `weaviate-setup.ipynb`.
+This is implemented in `main.py`.
 
 # Design Decisions
 ## Vector Database
